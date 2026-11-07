@@ -8,7 +8,7 @@
 <style>
 :root{color-scheme:dark;--bg:#101322;--panel:#1b2034;--panel2:#242b43;--text:#f6f7ff;--muted:#aab1c8;--accent:#8b78ff;--accent2:#42d6b2;--line:#303853}
 *{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 80% 0%,#29214d 0,transparent 35%),var(--bg);color:var(--text);font:16px system-ui,-apple-system,Segoe UI,Roboto,Arial}
-header{position:sticky;top:0;z-index:3;background:#101322eF;backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+header{position:sticky;top:0;z-index:3;background:#101322ef;backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
 .top{max-width:1100px;margin:auto;padding:15px 20px;display:flex;align-items:center;justify-content:space-between;gap:12px}
 .brand{font-size:22px;font-weight:850;letter-spacing:-.7px}.brand span{color:var(--accent)}
 .pill{background:#282344;color:#d9d2ff;padding:7px 11px;border-radius:999px;font-size:12px}
@@ -28,13 +28,15 @@ h2{font-size:21px;margin:0;letter-spacing:-.4px}h3{margin:0 0 7px;font-size:17px
 .mission{display:flex;flex-direction:column;gap:12px}.mission p{color:var(--muted);font-size:14px;margin:0;line-height:1.45}
 .mission-top{display:flex;gap:12px;align-items:center}.emoji{width:43px;height:43px;display:grid;place-items:center;background:var(--panel2);border-radius:14px;font-size:21px;flex:none}
 .reward{margin-left:auto;color:#8ee8d4;font-size:13px;font-weight:750;white-space:nowrap}
-button{font:inherit;border:0;border-radius:12px;padding:11px 15px;background:var(--accent);color:white;font-weight:750;cursor:pointer;transition:.15s}
+button,select{font:inherit;border:0;border-radius:12px;padding:11px 15px;background:var(--accent);color:white;font-weight:750;cursor:pointer}
 button:hover{filter:brightness(1.1);transform:translateY(-1px)}button:disabled{background:#3a4158;color:#aeb5c9;cursor:default;transform:none}
 .secondary{background:#2b324a;color:#e8eaff}.small{font-size:13px;padding:9px 12px}
 .quizbox{display:flex;flex-direction:column;gap:12px}.answers{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.answers button{background:#2b324a;text-align:left}.answers button.correct{background:#176c59}.answers button.wrong{background:#793d55}
 .progress{height:8px;background:#303853;border-radius:20px;overflow:hidden;margin-top:12px}.progress>div{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));width:0;transition:width .25s}
 .footer{color:var(--muted);font-size:12px;line-height:1.5;margin-top:22px}
 .toast{position:fixed;bottom:20px;left:50%;transform:translate(-50%,20px);opacity:0;pointer-events:none;background:#f5f4ff;color:#17172a;padding:12px 17px;border-radius:13px;font-weight:700;box-shadow:0 8px 30px #0005;transition:.2s;z-index:5}.toast.show{opacity:1;transform:translate(-50%,0)}
+.quiz-controls{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+select{background:#2b324a;color:#fff;border:1px solid var(--line)}
 @media(max-width:720px){.grid{grid-template-columns:1fr}.mission-list{grid-template-columns:1fr}main{margin-top:20px}.top{padding:13px 16px}.card{padding:17px}}
 @media(min-width:1000px){main{padding-left:28px;padding-right:28px}}
 </style>
@@ -47,7 +49,7 @@ button:hover{filter:brightness(1.1);transform:translateY(-1px)}button:disabled{b
   <div class="grid">
     <section class="card balance">
       <div><div class="eyebrow">Mon solde de points</div><div class="amount"><span id="points">0</span> <span style="font-size:19px;letter-spacing:0">XP</span></div><div class="note">Les XP sont des points de jeu, pas de l'argent.</div></div>
-      <div class="stats"><div class="stat">🏅 Niveau <b id="level">1</b></div><div class="stat">✅ <b id="done">0</b> missions terminées</div></div>
+      <div class="stats"><div class="stat">🏅 Niveau <b id="level">1</b></div><div class="stat">✅ <b id="done">0</b> défis terminés</div></div>
     </section>
     <section class="card">
       <div class="eyebrow" style="color:var(--muted)">Progression</div>
@@ -66,46 +68,104 @@ button:hover{filter:brightness(1.1);transform:translateY(-1px)}button:disabled{b
     <article class="card mission"><div class="mission-top"><div class="emoji">💡</div><div><h3>Idée du jour</h3><p>Écris une idée de projet ou une chose à découvrir.</p></div><div class="reward">+10 XP</div></div><button data-mission="idea">Valider la mission</button></article>
   </div>
 
-  <div class="section-head"><h2>🧠 Quiz express</h2><span class="pill">+20 XP</span></div>
+  <div class="section-head"><h2>🧠 Quiz collège</h2><span class="pill">5 questions par niveau</span></div>
   <section class="card quizbox">
-    <div id="question"><h3>Combien font 9 × 6 ?</h3><p class="sub" style="margin:0">Choisis la bonne réponse.</p></div>
-    <div class="answers" id="answers">
-      <button data-answer="42">42</button><button data-answer="54">54</button><button data-answer="56">56</button><button data-answer="64">64</button>
+    <div class="quiz-controls">
+      <label for="grade">Choisis ton niveau :</label>
+      <select id="grade">
+        <option value="6e">6e</option><option value="5e">5e</option><option value="4e">4e</option><option value="3e">3e</option>
+      </select>
+      <button id="startQuiz" class="small" type="button">Commencer le quiz</button>
     </div>
-    <p id="quizmsg" class="footer" aria-live="polite">Une bonne réponse rapporte 20 XP. Une seule tentative dans cette démo.</p>
+    <div id="quizArea">
+      <h3>Choisis une classe puis clique sur « Commencer le quiz ».</h3>
+      <p class="sub" style="margin:0">Matières : maths, français, histoire-géo et sciences.</p>
+    </div>
+    <div class="progress"><div id="quizProgress"></div></div>
+    <p id="quizmsg" class="footer" aria-live="polite">Chaque bonne réponse rapporte 5 XP. Les points sont virtuels.</p>
   </section>
   <p class="footer">Version prototype gratuite. Aucun paiement, retrait ou gain d'argent réel n'est proposé. Ne saisis pas de mot de passe, d'adresse ou d'information bancaire dans cette démo. Pour de vraies récompenses, il faudrait un partenaire fiable, des règles claires et l'accord d'un parent ou responsable légal.</p>
 </main>
 <div class="toast" id="toast" role="status"></div>
 <script>
-const KEY="winpoint-demo-v1";
-const initial={points:0,done:[],quiz:false};
+const KEY="winpoint-demo-v2";
+const initial={points:0,done:[],completedQuizzes:[]};
 let state;
 try{state={...initial,...JSON.parse(localStorage.getItem(KEY)||"{}")}}catch{state={...initial}}
 const missions={learn:10,tidy:15,idea:10};
+const quizzes={
+"6e":[
+{subject:"Maths",q:"Combien font 7 × 8 ?",a:["54","56","64","48"],correct:1},
+{subject:"Français",q:"Quel est le verbe dans « Le chat dort » ?",a:["chat","Le","dort","aucun"],correct:2},
+{subject:"Histoire",q:"Comment appelle-t-on la période avant l'invention de l'écriture ?",a:["Antiquité","Préhistoire","Moyen Âge","Temps modernes"],correct:1},
+{subject:"Sciences",q:"Quelle planète est surnommée la planète rouge ?",a:["Vénus","Mars","Jupiter","Saturne"],correct:1},
+{subject:"Géographie",q:"Quel est le nom d'une grande étendue d'eau salée ?",a:["Désert","Forêt","Océan","Montagne"],correct:2}
+],
+"5e":[
+{subject:"Maths",q:"Combien vaut 3/4 de 20 ?",a:["5","10","15","16"],correct:2},
+{subject:"Français",q:"Dans « Elles sont parties », quel est le sujet ?",a:["Elles","sont","parties","aucun"],correct:0},
+{subject:"Histoire",q:"Quel événement marque traditionnellement le début du Moyen Âge en Occident ?",a:["Chute de l'Empire romain d'Occident","Révolution française","Prise de la Bastille","Première Guerre mondiale"],correct:0},
+{subject:"Sciences",q:"Quel organe permet principalement de respirer ?",a:["Cœur","Poumons","Estomac","Foie"],correct:1},
+{subject:"Géographie",q:"Comment appelle-t-on une ligne imaginaire qui partage la Terre en hémisphère nord et sud ?",a:["Méridien de Greenwich","Équateur","Tropique du Cancer","Pôle Nord"],correct:1}
+],
+"4e":[
+{subject:"Maths",q:"Résous : 5x = 35.",a:["5","6","7","8"],correct:2},
+{subject:"Français",q:"Quelle figure de style trouve-t-on dans « fort comme un lion » ?",a:["Métaphore","Comparaison","Personnification","Hyperbole"],correct:1},
+{subject:"Histoire",q:"En quelle année commence la Révolution française ?",a:["1492","1789","1815","1914"],correct:1},
+{subject:"Sciences",q:"Quelle est l'unité de mesure de l'intensité électrique ?",a:["Volt","Watt","Ampère","Ohm"],correct:2},
+{subject:"Géographie",q:"Quel continent compte le plus grand nombre de pays ?",a:["Europe","Afrique","Océanie","Amérique du Sud"],correct:1}
+],
+"3e":[
+{subject:"Maths",q:"Quelle est la solution de 2x + 6 = 14 ?",a:["2","3","4","5"],correct:2},
+{subject:"Français",q:"Dans une phrase, quelle proposition dépend d'une autre ?",a:["Proposition subordonnée","Proposition indépendante","Phrase nominale","Sujet"],correct:0},
+{subject:"Histoire",q:"En quelle année se termine la Seconde Guerre mondiale en Europe ?",a:["1918","1939","1944","1945"],correct:3},
+{subject:"Sciences",q:"Quelle molécule porte l'information génétique ?",a:["Eau","ADN","Glucose","Dioxygène"],correct:1},
+{subject:"Géographie",q:"Quel indicateur mesure la richesse produite dans un pays en une année ?",a:["PIB","GPS","PMI","IDH uniquement"],correct:0}
+]};
+let currentGrade="6e",index=0,answered=false,quizFinished=false;
 function save(){localStorage.setItem(KEY,JSON.stringify(state));render()}
 function notify(msg){const t=document.getElementById("toast");t.textContent=msg;t.classList.add("show");setTimeout(()=>t.classList.remove("show"),1900)}
 function render(){
  document.getElementById("points").textContent=state.points;
- document.getElementById("done").textContent=state.done.length+(state.quiz?1:0);
- const level=Math.floor(state.points/100)+1, progress=state.points%100;
+ document.getElementById("done").textContent=state.done.length+state.completedQuizzes.length;
+ const level=Math.floor(state.points/100)+1,progress=state.points%100;
  document.getElementById("level").textContent=level;
  document.getElementById("remaining").textContent=100-progress;
  document.getElementById("bar").style.width=progress+"%";
  document.querySelectorAll("[data-mission]").forEach(b=>{const done=state.done.includes(b.dataset.mission);b.disabled=done;b.textContent=done?"Mission terminée ✓":"Valider la mission"});
- if(state.quiz){document.querySelectorAll("[data-answer]").forEach(b=>b.disabled=true);document.getElementById("quizmsg").textContent="Quiz déjà terminé. Bien joué !";}
 }
 document.querySelectorAll("[data-mission]").forEach(b=>b.addEventListener("click",()=>{
  const id=b.dataset.mission;if(state.done.includes(id))return;
  state.done.push(id);state.points+=missions[id];save();notify("Bravo ! +"+missions[id]+" XP");
 }));
-document.querySelectorAll("[data-answer]").forEach(b=>b.addEventListener("click",()=>{
- if(state.quiz)return;
- if(b.dataset.answer==="54"){state.quiz=true;state.points+=20;save();b.classList.add("correct");notify("Bonne réponse ! +20 XP");}
- else{b.classList.add("wrong");document.getElementById("quizmsg").textContent="Pas tout à fait. La bonne réponse est 54. Dans cette démo, le quiz n'est pas validé.";document.querySelectorAll("[data-answer]").forEach(x=>x.disabled=true);}
-}));
+function showQuestion(){
+ const area=document.getElementById("quizArea"),list=quizzes[currentGrade];
+ if(quizFinished){area.innerHTML="<h3>Quiz terminé ! 🎉</h3><p class='sub'>Tu as terminé le niveau "+currentGrade+". Choisis un autre niveau pour continuer.</p>";return}
+ const item=list[index];answered=false;
+ area.innerHTML=`<div class="eyebrow">${currentGrade} · ${item.subject} · Question ${index+1}/5</div><h3>${item.q}</h3><div class="answers" id="quizAnswers">${item.a.map((a,i)=>`<button type="button" data-choice="${i}">${a}</button>`).join("")}</div><div class="quiz-controls"><button id="nextQuestion" class="secondary small" type="button" disabled>${index===4?"Terminer":"Question suivante"}</button></div>`;
+ document.getElementById("quizProgress").style.width=(index/5*100)+"%";
+ document.querySelectorAll("[data-choice]").forEach(btn=>btn.addEventListener("click",()=>{
+   if(answered)return;answered=true;
+   const chosen=Number(btn.dataset.choice),correct=chosen===item.correct;
+   document.querySelectorAll("[data-choice]").forEach((b,i)=>{b.disabled=true;if(i===item.correct)b.classList.add("correct");else if(i===chosen)b.classList.add("wrong")});
+   if(correct){state.points+=5;save();document.getElementById("quizmsg").textContent="Bonne réponse ! +5 XP";notify("Bravo ! +5 XP")}
+   else document.getElementById("quizmsg").textContent="Pas tout à fait. La bonne réponse est : "+item.a[item.correct]+".";
+   document.getElementById("nextQuestion").disabled=false;
+ }));
+ document.getElementById("nextQuestion").addEventListener("click",()=>{
+   if(!answered)return;
+   if(index<4){index++;showQuestion()}
+   else{quizFinished=true;state.completedQuizzes.push(currentGrade);save();document.getElementById("quizProgress").style.width="100%";showQuestion();document.getElementById("quizmsg").textContent="Niveau "+currentGrade+" terminé ! Choisis un autre niveau pour continuer."}
+ });
+}
+document.getElementById("startQuiz").addEventListener("click",()=>{
+ currentGrade=document.getElementById("grade").value;index=0;quizFinished=false;
+ document.getElementById("quizmsg").textContent="Réponds aux 5 questions. Chaque bonne réponse rapporte 5 XP.";
+ showQuestion();
+});
+document.getElementById("grade").addEventListener("change",()=>{document.getElementById("quizArea").innerHTML="<h3>Clique sur « Commencer le quiz » pour jouer.</h3>";document.getElementById("quizProgress").style.width="0";});
 document.getElementById("reset").addEventListener("click",()=>{
- if(confirm("Effacer les points et recommencer la démo ?")){state={...initial,done:[]};localStorage.removeItem(KEY);document.querySelectorAll("[data-answer]").forEach(b=>{b.disabled=false;b.className=""});document.getElementById("quizmsg").textContent="Une bonne réponse rapporte 20 XP. Une seule tentative dans cette démo.";render();notify("Démo réinitialisée");}
+ if(confirm("Effacer les points et recommencer la démo ?")){state={...initial,done:[],completedQuizzes:[]};localStorage.removeItem(KEY);document.getElementById("quizArea").innerHTML="<h3>Choisis une classe puis clique sur « Commencer le quiz ».</h3>";document.getElementById("quizProgress").style.width="0";document.getElementById("quizmsg").textContent="Chaque bonne réponse rapporte 5 XP. Les points sont virtuels.";render();notify("Démo réinitialisée");}
 });
 render();
 </script>
